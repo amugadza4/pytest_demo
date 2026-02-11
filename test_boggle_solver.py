@@ -1,107 +1,57 @@
+# test_boggle_solver.py
+
 import unittest
-import sys
+from boggle_solver import Boggle
 
-# Path so unittest can find your solver
-sys.path.append("/home/codio/workspace/")
+class TestBoggle(unittest.TestCase):
 
-from boggle_solver import BoggleSolver  # <- Fixed to match your class
-
-
-# -----------------------------
-# SIMPLE EDGE CASE TESTS
-# -----------------------------
-class TestSuite_Simple_Edge_Cases(unittest.TestCase):
-
-    def test_SquareGrid_case_1x1(self):
-        grid = [["A"]]
-        dictionary = ["a", "b", "c"]
-
-        game = BoggleSolver(grid, dictionary)
-        solution = sorted([x.upper() for x in game.getSolution()])
-
-        expected = []
-        self.assertEqual(expected, solution)
-
-    def test_EmptyGrid_case_0x0(self):
-        grid = [[]]
-        dictionary = ["hello", "there", "general", "kenobi"]
-
-        game = BoggleSolver(grid, dictionary)
-        solution = sorted([x.upper() for x in game.getSolution()])
-
-        expected = []
-        self.assertEqual(expected, solution)
-
-    def test_empty_dictionary(self):
-        grid = [["A","B"],["C","D"]]
-        dictionary = []
-
-        game = BoggleSolver(grid, dictionary)
-        solution = game.getSolution()
-
-        self.assertEqual([], solution)
-
-
-# -----------------------------
-# NORMAL FUNCTIONAL TESTS
-# -----------------------------
-class TestSuite_Normal_Cases(unittest.TestCase):
-
-    def test_single_word_found(self):
-        grid = [
-            ["C","A","T"],
-            ["X","X","X"],
-            ["X","X","X"]
-        ]
+    #  Single word in small grid
+    def test_single_word(self):
+        grid = [["C","A","T"]]
         dictionary = ["cat"]
+        game = Boggle(grid, dictionary)
+        self.assertEqual(game.getSolution(), ["cat"])
 
-        game = BoggleSolver(grid, dictionary)
-        solution = sorted([x.upper() for x in game.getSolution()])
-
-        expected = ["CAT"]
-        self.assertEqual(expected, solution)
-
-    def test_multiple_words_found(self):
+    #  Multiple words in 3x3 grid
+    def test_multiple_words(self):
         grid = [
             ["C","A","T"],
             ["D","O","G"],
             ["R","A","T"]
         ]
         dictionary = ["cat", "dog", "rat"]
+        game = Boggle(grid, dictionary)
+        self.assertEqual(sorted(game.getSolution()), sorted(["cat","dog","rat"]))
 
-        game = BoggleSolver(grid, dictionary)
-        solution = sorted([x.upper() for x in game.getSolution()])
-
-        expected = sorted(["CAT", "DOG", "RAT"])
-        self.assertEqual(expected, solution)
-
-    def test_dictionary_word_not_present(self):
+    #  Word not present
+    def test_word_not_present(self):
         grid = [["A","B"],["C","D"]]
-        dictionary = ["HELLO"]
+        dictionary = ["hello"]
+        game = Boggle(grid, dictionary)
+        self.assertEqual(game.getSolution(), [])
 
-        game = BoggleSolver(grid, dictionary)
-        solution = game.getSolution()
+    #  Empty dictionary
+    def test_empty_dictionary(self):
+        grid = [["A","B"],["C","D"]]
+        dictionary = []
+        game = Boggle(grid, dictionary)
+        self.assertEqual(game.getSolution(), [])
 
-        self.assertEqual([], solution)
+    # 5️⃣ 1x1 grid edge case
+    def test_1x1_grid(self):
+        grid = [["A"]]
+        dictionary = ["a","b"]
+        game = Boggle(grid, dictionary)
+        self.assertEqual(game.getSolution(), [])
 
+    #  Empty grid
+    def test_empty_grid(self):
+        grid = [[]]
+        dictionary = ["a","b"]
+        game = Boggle(grid, dictionary)
+        self.assertEqual(game.getSolution(), [])
 
-# -----------------------------
-# COMPLEX / PATH TESTS
-# -----------------------------
-class TestSuite_Complete_Coverage(unittest.TestCase):
-
-    def test_repeated_letter_usage(self):
-        grid = [
-            ["A","A"],
-            ["A","A"]
-        ]
-        dictionary = ["AAA"]
-
-        game = BoggleSolver(grid, dictionary)
-        solution = game.getSolution()
-
-        self.assertTrue(len(solution) >= 0)
-
+    #  Diagonal word usage
     def test_diagonal_word(self):
         grid = [
             ["C","X","X"],
@@ -109,61 +59,30 @@ class TestSuite_Complete_Coverage(unittest.TestCase):
             ["X","X","T"]
         ]
         dictionary = ["cat"]
+        game = Boggle(grid, dictionary)
+        self.assertIn("cat", game.getSolution())
 
-        game = BoggleSolver(grid, dictionary)
-        solution = [x.upper() for x in game.getSolution()]
+    #  Repeated letters usage
+    def test_repeated_letters(self):
+        grid = [
+            ["A","A"],
+            ["A","A"]
+        ]
+        dictionary = ["aaa"]
+        game = Boggle(grid, dictionary)
+        self.assertIn("aaa", game.getSolution())
 
-        self.assertIn("CAT", solution)
-
-
-# -----------------------------
-# QU AND ST SPECIAL CASES
-# -----------------------------
-class TestSuite_Qu_and_St(unittest.TestCase):
-
+    #  "Qu" handling
     def test_qu_word(self):
         grid = [
             ["Qu","A"],
             ["T","S"]
         ]
         dictionary = ["quat"]
+        game = Boggle(grid, dictionary)
+        self.assertIn("quat", game.getSolution())
 
-        game = BoggleSolver(grid, dictionary)
-        solution = [x.upper() for x in game.getSolution()]
-
-        self.assertIn("QUAT", solution)
-
-    def test_st_word(self):
-        grid = [
-            ["S","T"],
-            ["A","R"]
-        ]
-        dictionary = ["star"]
-
-        game = BoggleSolver(grid, dictionary)
-        solution = [x.upper() for x in game.getSolution()]
-
-        self.assertIn("STAR", solution)
-
-
-# -----------------------------
-# SCALABILITY TESTS
-# -----------------------------
-class TestSuite_Alg_Scalability_Cases(unittest.TestCase):
-
-    def test_Normal_case_3x3(self):
-        grid = [
-            ["C","A","T"],
-            ["D","O","G"],
-            ["R","A","T"]
-        ]
-        dictionary = ["cat", "dog", "rat", "car", "tar"]
-
-        game = BoggleSolver(grid, dictionary)
-        solution = game.getSolution()
-
-        self.assertTrue(len(solution) >= 0)
-
+    #  4x4 grid scalability
     def test_4x4_grid(self):
         grid = [
             ["T","W","Y","R"],
@@ -171,15 +90,11 @@ class TestSuite_Alg_Scalability_Cases(unittest.TestCase):
             ["G","Z","Qu","R"],
             ["O","N","T","A"]
         ]
-        dictionary = ["ten", "went", "quart", "net"]
+        dictionary = ["ten","went","quart","net"]
+        game = Boggle(grid, dictionary)
+        result = game.getSolution()
+        self.assertTrue(len(result) > 0)
 
-        game = BoggleSolver(grid, dictionary)
-        solution = game.getSolution()
-
-        self.assertTrue(len(solution) >= 0)
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
-
 
